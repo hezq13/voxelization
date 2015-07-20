@@ -1,25 +1,27 @@
 #ifndef LOADOBJ_H
 #define LOADOBJ_H
 
-#include <iostream>
-#include <fstream>
-#include <string>
-#include <vector>
-#include <math.h>
+#include<iostream>
+#include<fstream>
+#include<string>
+#include<vector>
 #include<map>
 
 using namespace std;
 
+//vertex of triangle 
 typedef struct TriangleDot{
     double x;
     double y;
     double z;
 }TriangleDot;
 
+//face of triangle
 typedef struct TriangleFace{
     int dot[3];
 }TriangleFace;
 
+//key of map,the position of voxel
 typedef struct st{
     int x,y,z;
     st():x(0),y(0),z(0){}
@@ -29,12 +31,14 @@ typedef struct st{
     }
 }st;
 
-
+//the struct of mesh
 typedef struct TriangleMesh{
     vector<TriangleDot> dots;
     vector<TriangleFace> faces;
 }TriangleMesh;
 
+
+//load data from obj file
 void loadObj(const string path,TriangleMesh & mesh){
     ifstream file(path.c_str());
     if(!file.is_open()){
@@ -68,6 +72,7 @@ void getPanel(TriangleDot d1,TriangleDot d2,TriangleDot d3,double &a,double &b,d
 
 }
 
+// if d3 and dd on the same side of d1 and d2
 bool sameSide(TriangleDot d1,TriangleDot d2,TriangleDot d3,TriangleDot dd){
     TriangleDot d1_2,d1_3,d1_d,dp1,dp2;
 
@@ -95,10 +100,12 @@ bool sameSide(TriangleDot d1,TriangleDot d2,TriangleDot d3,TriangleDot dd){
     
 }
 
+//if dd in triangle
 bool pointInTriangle(TriangleDot d1,TriangleDot d2,TriangleDot d3,TriangleDot dd){
     return (sameSide(d1,d2,d3,dd) && sameSide(d2,d3,d1,dd) && sameSide(d3,d1,d2,dd));
 }
 
+//get voxels of obj file
 void getVoxels(double size,TriangleMesh &mesh,map<st,int> &voxel){
     double xmin,xmax,ymin,ymax,zmin,zmax;
     xmin = xmax = mesh.dots[0].x;
@@ -132,7 +139,7 @@ void getVoxels(double size,TriangleMesh &mesh,map<st,int> &voxel){
 	xmax += (size - temp)/2;
     }
 
-    temp = (ymax -ymin)/size;
+    temp = (ymax - ymin)/size;
     temp = (temp-(int)temp)*size;
     if(temp > 0){
 	ymin -= (size - temp)/2;
@@ -148,7 +155,7 @@ void getVoxels(double size,TriangleMesh &mesh,map<st,int> &voxel){
 
     for(unsigned int i = 0; i < mesh.faces.size(); i++){
 	TriangleDot d[3];
-	for(int j = 0; j < 3; j++){
+	for(unsigned int j = 0; j < 3; j++){
 	    d[j] = mesh.dots[mesh.faces[i].dot[j]-1];
 	}
 
@@ -161,7 +168,7 @@ void getVoxels(double size,TriangleMesh &mesh,map<st,int> &voxel){
 	y_min = y_max = d[0].y;
 	z_min = z_max = d[0].z;
 
-	for(int j = 1; j < 3; j++){
+	for(unsigned int j = 1; j < 3; j++){
 	    if(d[j].x<x_min)
 		x_min = d[j].x;
 	    else if(d[j].x>x_max)
@@ -178,14 +185,14 @@ void getVoxels(double size,TriangleMesh &mesh,map<st,int> &voxel){
 		z_max = d[j].z;
         }
  
-	int x_l = (int)((x_min-xmin)/size);
-	int x_h = (int)((x_max-xmin)/size);
-
-	int y_l = (int)((y_min-ymin)/size);
-	int y_h = (int)((y_max-ymin)/size);
-
-	int z_l = (int)((z_min-zmin)/size);
-	int z_h = (int)((z_max-zmin)/size);
+//	int x_l = (int)((x_min-xmin)/size);
+//	int x_h = (int)((x_max-xmin)/size);
+//
+//	int y_l = (int)((y_min-ymin)/size);
+//	int y_h = (int)((y_max-ymin)/size);
+//
+//	int z_l = (int)((z_min-zmin)/size);
+//	int z_h = (int)((z_max-zmin)/size);
 
 	if(a == 0.0){
 	    if(b == 0.0){
@@ -326,9 +333,8 @@ void getVoxels(double size,TriangleMesh &mesh,map<st,int> &voxel){
 			    dd.y = jj;
 			    dd.z = (-e - a*dd.x - b*dd.y)/c;
 			    
-			    if(pointInTriangle(d[0],d[1],d[2],dd)){
-				//cout<<" ddd "<<dd.z<<endl;
-			       voxel.insert(pair<st,int>(st((int)((ii-xmin)/size),(int)((jj-ymin)/size),(int)((dd.z-zmin)/size)),1));}
+			    if(pointInTriangle(d[0],d[1],d[2],dd))
+			       voxel.insert(pair<st,int>(st((int)((ii-xmin)/size),(int)((jj-ymin)/size),(int)((dd.z-zmin)/size)),1));
 			    if(y_max - jj > 0 && y_max -jj < size)
 			        jj = y_max;
 			    else 
